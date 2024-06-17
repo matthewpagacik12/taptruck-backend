@@ -64,73 +64,72 @@ app.post('/api/send-quote', async (req, res) => {
     html: `
       <html>
         <head>
-          <style>
-         body {
-            font-family: Arial, sans-serif;
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
         }
-          h2{
-            font-weight: 800;
-        }
+
         .invoice {
-            width: 50%;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            height: 150vh;
+          width: 100%;
+          max-width: 600px;
+          margin: 20px auto;
+          padding: 20px;
+          border: 1px solid #ccc;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .invoice-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            color: #000000;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          color: #000000;
         }
+
         .invoice-header p {
-            color: #000000;
+          margin: 5px 0;
         }
 
-        .invoice-header-left {
-            flex: 1;
-        }
-
-        .invoice-header-right {
-            flex: 1;
-            text-align: right;
+        .invoice-header-left, .invoice-header-right {
+          flex: 1;
         }
 
         .invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20%;
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
         }
 
-        .invoice-table th,
-        .invoice-table td {
-            border: 1px solid #000;
-            padding: 10px;
-            text-align: center;
+        .invoice-table th, .invoice-table td {
+          border: 1px solid #000;
+          padding: 10px;
+          text-align: center;
         }
 
         .invoice-table th {
-            background-color: #5c819d;
-            color: #fff;
-            font-weight: bold;
-            text-align: center;
+          background-color: #5c819d;
+          color: #fff;
+          font-weight: bold;
         }
 
         .invoice-total {
-            float: right;
-        }
-        .invoice-total p {
-            font-weight: bold;
-        }
-        .invoice-footer {
-            color: #000000;
+          text-align: right;
         }
 
-          </style>
+        .invoice-total p {
+          font-weight: bold;
+          margin: 5px 0;
+        }
+
+        .invoice-footer {
+          color: #000000;
+        }
+      </style>
+
         </head>
         <body>
            <div class="invoice">
