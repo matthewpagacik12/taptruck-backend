@@ -24,7 +24,7 @@ app.use(express.static('public'));
 
 // POST route to handle form submission
 app.post('/api/send-quote', async (req, res) => {
-  const { email, packageSelect, numberOfGuests, bartendingHours, mileage, state, salesTaxRate, totalBeforeTax, totalAfterTax } = req.body;
+  const { email, packageSelect, numberOfGuests, bartendingHours, mileage, state, salesTaxRate, additionalNotes, totalBeforeTax, totalAfterTax } = req.body;
   const date = new Date().toLocaleDateString();
 
   let packageUnitPrice;
@@ -170,7 +170,7 @@ app.post('/api/send-quote', async (req, res) => {
                     <th>Unit Price</th>
                     <th>Total</th>
                 </tr>
-            </thead>
+              </thead>
                 <tr>
                     <td>Full Service (3 Hour Minimum)</td>
                     <td>${bartendingHours}</td>
@@ -185,10 +185,19 @@ app.post('/api/send-quote', async (req, res) => {
                     <td>$${calculatedMilage}</td>
                 </tr>
             </tbody>
+                <thead>
+                <tr>
+                    <th>Additional Notes</th>
+                </tr>
+              </thead>
+                <tr>
+                    <td>${additionalNotes}</td>
+                </tr>
+     
         </table>
 
         <div class="invoice-total">
-                <p><strong>Sales Tax Rate:</strong> ${(salesTaxRate * 100).toFixed(2)}%</p>
+                <p><strong>${state} Sales Tax Rate:</strong> ${(salesTaxRate * 100).toFixed(2)}%</p>
             <p><strong>Subtotal:</strong> $${totalBeforeTax.toFixed(2)}</p>
             <p><strong>Total:</strong> $${totalAfterTax.toFixed(2)}</p>
         </div>
