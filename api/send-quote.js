@@ -9,7 +9,7 @@ const app = express();
 const PORT = 3000;
 
 const corsOptions = {
-  origin: 'https://taptruck-quote-calculator.netlify.app', // replace with your Netlify site's URL
+  origin: 'https://taptruck-quote-site.netlify.app/', // replace with your Netlify site's URL
   optionsSuccessStatus: 200
 };
 
