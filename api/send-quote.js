@@ -35,12 +35,15 @@ app.post('/api/send-quote', async (req, res) => {
     calculatedMilage = 30 - mileage;
   }
 
+  // house package pricing
   if (packageSelect === "house") {
     packageUnitPrice = 12;
   }
+  // custom package pricing
   else if (packageSelect === "custom") {
     packageUnitPrice = 17;
   }
+  // super package pricing
   else if (packageSelect === "super") {
     packageUnitPrice = 25;
   }
