@@ -36,13 +36,13 @@ app.post('/api/send-quote', async (req, res) => {
   }
 
   if (packageSelect === "house") {
-    packageUnitPrice = 10;
+    packageUnitPrice = 12;
   }
   else if (packageSelect === "custom") {
-    packageUnitPrice = 15;
+    packageUnitPrice = 17;
   }
   else if (packageSelect === "super") {
-    packageUnitPrice = 20;
+    packageUnitPrice = 25;
   }
   else {
     return res.status(400).send('Invalid package selection');
