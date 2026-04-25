@@ -1,5 +1,8 @@
 {
   "version": 2,
   "builds": [{ "src": "api/send-quote.js", "use": "@vercel/node" }],
-  "routes": [{ "src": "/api/send-quote", "dest": "/api/send-quote.js" }]
+  "routes": [
+    { "src": "/health", "dest": "/api/send-quote.js" },
+    { "src": "/api/send-quote", "dest": "/api/send-quote.js" }
+  ]
 }
