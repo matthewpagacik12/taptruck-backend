@@ -3,7 +3,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const xoauth2 = require('xoauth2');
 const CLIENTS = require('../config/clients');
 
 const app = express();
