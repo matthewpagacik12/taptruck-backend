@@ -4,13 +4,28 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const xoauth2 = require('xoauth2');
+const CLIENTS = require('../config/clients');
 
 const app = express();
 const PORT = 3000;
 
+const allowedOrigins = [
+  'https://taptruck-quote-site.netlify.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+];
+
 const corsOptions = {
-  origin: 'https://taptruck-quote-site.netlify.app',
-  optionsSuccessStatus: 200
+  origin: (origin, callback) => {
+    // Allow requests without an origin (curl, Postman, server-to-server).
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 
@@ -24,46 +39,48 @@ app.use(express.static('public'));
 
 // POST route to handle form submission
 app.post('/api/send-quote', async (req, res) => {
-  const { email, packageSelect, numberOfGuests, bartendingHours, mileage, state, salesTaxRate, additionalNotes, totalBeforeTax, totalAfterTax } = req.body;
+  const { clientId, email, packageSelect, numberOfGuests, bartendingHours, truckRentalHours, mileage, state, salesTaxRate, additionalNotes, totalBeforeTax, totalAfterTax } = req.body;
+  const resolvedClientId = clientId || 'taptruckct';
+  const client = CLIENTS[resolvedClientId];
+
+  if (!client) {
+    return res.status(400).send('Invalid client');
+  }
+
   const date = new Date().toLocaleDateString();
 
-  let packageUnitPrice;
-  let calculatedMilage = mileage - 30;
-  calculatedMilage = calculatedMilage * 2;
-
-  if (calculatedMilage <= 30) {
-    calculatedMilage = 30 - mileage;
-  }
-
-  // house package pricing
-  if (packageSelect === "house") {
-    packageUnitPrice = 12;
-  }
-  // custom package pricing
-  else if (packageSelect === "custom") {
-    packageUnitPrice = 17;
-  }
-  // super package pricing
-  else if (packageSelect === "super") {
-    packageUnitPrice = 25;
-  }
-  else {
+  const pkg = client.packages.find(p => p.value === packageSelect);
+  if (!pkg) {
     return res.status(400).send('Invalid package selection');
   }
+  const packageUnitPrice = pkg.price;
+  const packageLabel = pkg.label;
+
+  const { bartending: bartendingRate, bartendingLabel, mileage: mileageRate, freeMiles, truckRental: truckRentalRate } = client.rates;
+  const truckRentalHoursInt = parseInt(truckRentalHours) || 0;
+  const calculatedMileageCharge = mileage > freeMiles ? (mileage - freeMiles) * mileageRate : 0;
+  const bartendingCharge = bartendingHours * bartendingRate;
+  const truckRentalCharge = truckRentalHoursInt * truckRentalRate;
 
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: client.emailUser,
+      pass: client.emailPass,
     },
   });
 
+  const recipientList = [...new Set([
+    email,
+    client.businessEmail,
+    client.emailUser,
+  ].filter(Boolean))].join(', ');
+
   // Email content
   let mailOptions = {
-    from: 'Tap Truck CT',
-    to: `${email}, taptruckct@gmail.com`, // Send to both customer and your email
-    subject: 'Tap Truck Quote',
+    from: client.name,
+    to: recipientList,
+    subject: `${client.name} Quote`,
     html: `
       <html>
         <head>
@@ -138,11 +155,11 @@ app.post('/api/send-quote', async (req, res) => {
            <div class="invoice">
         <div class="invoice-header">
             <div class="invoice-header-left">
-                <img src="https://taptruckct.com/wp-content/uploads/2024/06/Chris_tap_truck_logo-2.png" alt="Tap Truck CT Logo" width="150">
-                <h1>Tap Truck CT</h1>
-                <p>Email: taptruckct@gmail.com</p>
-                <p>Phone: (203) 772-8382</p>
-                <p>***This quote is not final, the final quote may vary***
+            <img src="${client.logo}" alt="${client.name} Logo" width="150">
+            <h1>${client.name}</h1>
+            <p>Email: ${client.businessEmail}</p>
+                ${client.phone ? `<p>Phone: ${client.phone}</p>` : ''}
+                <p>***Final price may vary pending final selections***
             </div>
             <div class="invoice-header-right">
                 <h2>Quote</h2>
@@ -161,9 +178,9 @@ app.post('/api/send-quote', async (req, res) => {
             </thead>
             <tbody>
                 <tr>
-                    <td>${packageSelect}</td>
+                    <td>${packageLabel}</td>
                     <td>${numberOfGuests}</td>
-                    <td>$${packageUnitPrice}</td>
+                    <td>$${packageUnitPrice}/person</td>
                     <td>$${numberOfGuests * packageUnitPrice}</td>
                 </tr>
               <thead>
@@ -175,17 +192,23 @@ app.post('/api/send-quote', async (req, res) => {
                 </tr>
               </thead>
                 <tr>
-                    <td>Full Service (3 Hour Minimum)</td>
+                    <td>${bartendingLabel}</td>
                     <td>${bartendingHours}</td>
-                    <td>$300/hour</td>
-                    <td>$${bartendingHours * 300}</td>
+                    <td>$${bartendingRate}/hour</td>
+                    <td>$${bartendingCharge}</td>
                 </tr>
-     
+                ${truckRentalCharge > 0 ? `
                 <tr>
-                    <td>Mileage Charge (First 30 Miles Free)</td>
+                    <td>Truck Rental</td>
+                    <td>${truckRentalHoursInt}</td>
+                    <td>$${truckRentalRate}/hour</td>
+                    <td>$${truckRentalCharge}</td>
+                </tr>` : ''}
+                <tr>
+                    <td>Mileage Charge${freeMiles > 0 ? ` (First ${freeMiles} Miles Free)` : ''}</td>
                     <td>${mileage}</td>
-                    <td>$2/mile over 30 miles</td>
-                    <td>$${calculatedMilage}</td>
+                    <td>${freeMiles > 0 ? `$${mileageRate}/mile over ${freeMiles} miles` : `$${mileageRate}/mile`}</td>
+                    <td>$${calculatedMileageCharge}</td>
                 </tr>
             </tbody>
                 <thead>
@@ -206,7 +229,7 @@ app.post('/api/send-quote', async (req, res) => {
         </div>
 
         <div class="invoice-footer">
-            <p>Thank you for requesting a quote from us!</p>
+            <p>Great drinks and a well-crafted experience leave a lasting impression, cheers!</p>
         </div>
     </div>
         </body>
@@ -221,6 +244,15 @@ app.post('/api/send-quote', async (req, res) => {
     console.error('Error sending email:', error);
     res.status(500).send('Error sending email');
   }
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    clients: Object.keys(CLIENTS),
+  });
 });
 
 app.listen(PORT, () => {
