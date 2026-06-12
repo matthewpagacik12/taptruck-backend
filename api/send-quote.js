@@ -169,44 +169,38 @@ app.post('/api/send-quote', async (req, res) => {
         <table class="invoice-table">
             <thead>
                 <tr>
-                    <th>Drinks</th>
-                    <th>Guests</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
+              <th>Drinks</th>
+              <th>Guests</th>
+              <th>Total</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>${packageLabel}</td>
                     <td>${numberOfGuests}</td>
-                    <td>$${packageUnitPrice}/person</td>
                     <td>$${numberOfGuests * packageUnitPrice}</td>
                 </tr>
               <thead>
                 <tr>
                     <th>Bartending</th>
                     <th>Quantity</th>
-                    <th>Unit Price</th>
                     <th>Total</th>
                 </tr>
               </thead>
                 <tr>
                     <td>${bartendingLabel}</td>
                     <td>${bartendingHours}</td>
-                    <td>$${bartendingRate}/hour</td>
                     <td>$${bartendingCharge}</td>
                 </tr>
                 ${truckRentalCharge > 0 ? `
                 <tr>
                     <td>Truck Rental</td>
                     <td>${truckRentalHoursInt}</td>
-                    <td>$${truckRentalRate}/hour</td>
                     <td>$${truckRentalCharge}</td>
                 </tr>` : ''}
                 <tr>
                     <td>Mileage Charge${freeMiles > 0 ? ` (First ${freeMiles} Miles Free)` : ''}</td>
                     <td>${mileage}</td>
-                    <td>${freeMiles > 0 ? `$${mileageRate}/mile over ${freeMiles} miles` : `$${mileageRate}/mile`}</td>
                     <td>$${calculatedMileageCharge}</td>
                 </tr>
             </tbody>

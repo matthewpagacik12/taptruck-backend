@@ -23,7 +23,7 @@ const CLIENTS = {
     name: 'Tap Truck Hudson Valley',
     emailUser: process.env.HUDSONVALLEY_EMAIL_USER,
     emailPass: process.env.HUDSONVALLEY_EMAIL_PASS,
-    businessEmail: 'taptruckevents@gmail.com',
+    businessEmail: 'taptruckhudsonvalley@gmail.com',
     logo: 'https://taptruck-quote-site.netlify.app/hudsonvalley/taptruckhudsonvalley.png',
     phone: '',
     packages: [
